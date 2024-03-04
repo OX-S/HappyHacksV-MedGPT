@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedGPT</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+        <h1><img class="logo" src="{{ url_for('static', filename='medgpt.svg') }}" alt="MedGPT Logo">MedGPT</h1>
+        </div>
+        <div class="strip">
+            <p> Chatting with MedGPT </p>
+        </div>
+        <div id="chat-box"></div>
+        <div class="input-box">
+            <label for="user-input"></label><input type="text" id="user-input" placeholder="Type your message...">
+            <button id="send-btn">
+                <img class="send-icon" src="{{ url_for('static', filename='send.svg') }}" alt="Send">
+
+            </button>
+        </div>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const chatBox = document.getElementById('chat-box');
+            const userInput = document.getElementById('user-input');
+            const sendBtn = document.getElementById('send-btn');
+
+            sendBtn.addEventListener('click', function () {
+                sendMessage(userInput.value);
+                userInput.value = '';
+            });
+
+            function sendMessage(message) {
+                if (message.trim() === '') return;
+
+                const userDiv = document.createElement('div');
+                userDiv.className = 'user-message';
+                userDiv.innerText = message;
+                chatBox.appendChild(userDiv);
+
+                fetch('/ask', {
+                    method: 'POST',
+                    body: new URLSearchParams({
+                        message: message
+                    }),
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const botDiv = document.createElement('div');
+                    botDiv.className = 'bot-message';
+                    botDiv.innerText = data.message;
+                    chatBox.appendChild(botDiv);
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        });
+    </script>
+</body>
+</html>
